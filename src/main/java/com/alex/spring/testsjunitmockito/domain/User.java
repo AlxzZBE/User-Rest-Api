@@ -6,6 +6,7 @@ import javax.persistence.*;
 
 @EqualsAndHashCode
 @Builder
+@Getter @Setter
 @Entity
 public class User {
 
