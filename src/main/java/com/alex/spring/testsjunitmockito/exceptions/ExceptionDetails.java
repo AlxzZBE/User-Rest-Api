@@ -1,11 +1,14 @@
 package com.alex.spring.testsjunitmockito.exceptions;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Data
+@AllArgsConstructor
+@Getter @Setter
 @Builder
 public class ExceptionDetails {
     protected LocalDateTime timeStamp;

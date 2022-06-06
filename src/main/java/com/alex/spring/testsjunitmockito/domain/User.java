@@ -7,6 +7,8 @@ import javax.persistence.*;
 @EqualsAndHashCode
 @Builder
 @Getter @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class User {
 

@@ -6,6 +6,8 @@ import com.alex.spring.testsjunitmockito.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -15,5 +17,9 @@ public class UserService {
     public User findById(Integer id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User with id `%d` not found".formatted(id)));
+    }
+
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 }

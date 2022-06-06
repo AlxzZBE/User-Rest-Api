@@ -21,6 +21,11 @@ public class LocalConfig {
                 .email("alexsander_lima99@hotmail.com")
                 .password("1234")
                 .build());
+        userRepository.save(User.builder()
+                .name("Be")
+                .email("testes@gmail.com")
+                .password("01234")
+                .build());
 
     }
 
