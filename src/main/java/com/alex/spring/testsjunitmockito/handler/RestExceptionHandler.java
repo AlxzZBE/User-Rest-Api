@@ -1,5 +1,6 @@
 package com.alex.spring.testsjunitmockito.handler;
 
+import com.alex.spring.testsjunitmockito.exceptions.EmailAlreadyExistsException;
 import com.alex.spring.testsjunitmockito.exceptions.ExceptionDetails;
 import com.alex.spring.testsjunitmockito.exceptions.NotFoundException;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,17 @@ public class RestExceptionHandler {
                         .status(HttpStatus.NOT_FOUND.value())
                         .details(nfe.getMessage())
                         .build(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ExceptionDetails> handlerEmailAlreadyExists(EmailAlreadyExistsException eae) {
+        return new ResponseEntity<>(
+                ExceptionDetails.builder()
+                        .timeStamp(LocalDateTime.now())
+                        .title("Email Already Exists Exception, Check the Documentation")
+                        .status(HttpStatus.CONFLICT.value())
+                        .details(eae.getMessage())
+                        .build(), HttpStatus.CONFLICT);
     }
 
 }
