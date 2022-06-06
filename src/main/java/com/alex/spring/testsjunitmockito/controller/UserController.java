@@ -22,7 +22,7 @@ public class UserController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<UserGet> findById(@PathVariable Integer id) {
-        log.info("Finding User by id `{}`", id);
+        log.info("Finding User by Id `{}`", id);
         User userSaved = userService.findById(id);
         return ResponseEntity.ok(UserGet.builder()
                 .id(userSaved.getId())
@@ -34,6 +34,12 @@ public class UserController {
     public ResponseEntity<List<UserGet>> findAll() {
         log.info("Finding All Users");
         return ResponseEntity.ok(userService.findAll().stream().map(UserGet::new).toList());
+    }
+
+    @GetMapping(path = "/find")
+    public ResponseEntity<UserGet> findByEmail(@RequestParam String email) {
+        log.info("Finding User by Email `{}`", email);
+        return ResponseEntity.ok(new UserGet(userService.findByEmail(email)));
     }
 
     @PostMapping
