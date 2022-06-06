@@ -5,6 +5,7 @@ import com.alex.spring.testsjunitmockito.exceptions.EmailAlreadyExistsException;
 import com.alex.spring.testsjunitmockito.exceptions.NotFoundException;
 import com.alex.spring.testsjunitmockito.repositories.UserRepository;
 import com.alex.spring.testsjunitmockito.requests.UserPostRequestBody;
+import com.alex.spring.testsjunitmockito.requests.UserPutRequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public User findById(Integer id) {
+    public User findByIdOrThrowNotFoundException(Integer id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User with id `%d` not found".formatted(id)));
     }
@@ -25,7 +26,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User findByEmail(String email) {
+    public User findByEmailOrThrowNotFoundException(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User with email `%s` not found".formatted(email)));
     }
@@ -39,9 +40,26 @@ public class UserService {
                 .build());
     }
 
+    public User update(UserPutRequestBody userPutRequestBody) {
+        findByIdOrThrowNotFoundException(userPutRequestBody.getId());
+        checkingEmailAlreadyExists(userPutRequestBody);
+        return userRepository.save(User.builder()
+                .id(userPutRequestBody.getId())
+                .name(userPutRequestBody.getName())
+                .email(userPutRequestBody.getEmail())
+                .password(userPutRequestBody.getPassword())
+                .build());
+    }
+
     private void checkingEmailAlreadyExists(String email) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new EmailAlreadyExistsException("User with email `%s` Already Exists!".formatted(email));
+        }
+    }
+
+    private void checkingEmailAlreadyExists(UserPutRequestBody user) {
+        if (userRepository.findByEmail(user.getEmail()).map(User::getId).filter(i -> !user.getId().equals(i)).isPresent()) {
+            throw new EmailAlreadyExistsException("User with email `%s` Already Exists!".formatted(user.getEmail()));
         }
     }
 }
