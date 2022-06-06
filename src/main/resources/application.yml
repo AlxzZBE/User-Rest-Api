@@ -8,3 +8,7 @@ spring:
 
   profiles:
     active: local
+
+server:
+  error:
+    include-stacktrace: ON_PARAM

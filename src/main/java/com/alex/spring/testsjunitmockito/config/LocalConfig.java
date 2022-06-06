@@ -19,7 +19,7 @@ public class LocalConfig {
         userRepository.save(User.builder()
                 .name("Alex")
                 .email("alexsander_lima99@hotmail.com")
-                .password("1234")
+                .password("12345")
                 .build());
         userRepository.save(User.builder()
                 .name("Be")
