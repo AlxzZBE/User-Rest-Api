@@ -123,7 +123,7 @@ class UserServiceTest {
     @Test
     @DisplayName("findByName Returns a List of User When Successful")
     void findByName_ReturnsAListOfUser_WhenSuccessful() {
-        List<User> userResponseList = userService.findByName("tests");
+        List<User> userResponseList = userService.findByName("NameTest");
 
         Assertions.assertThat(userResponseList).isNotEmpty().isNotNull().hasSize(1);
         Assertions.assertThat(userResponseList.get(0)).isNotNull().isExactlyInstanceOf(User.class);
@@ -131,6 +131,16 @@ class UserServiceTest {
         Assertions.assertThat(userResponseList.get(0).getName()).isNotNull().isEqualTo(EXPECTED_NAME);
         Assertions.assertThat(userResponseList.get(0).getEmail()).isNotNull().isEqualTo(EXPECTED_EMAIL);
         Assertions.assertThat(userResponseList.get(0).getPassword()).isNotNull().isEqualTo(EXPECTED_PASSWORD);
+    }
+
+    @Test
+    @DisplayName("findByName Returns a Empty List When User is Not Found")
+    void findByName_ReturnsAEmptyList_WhenUserIsNotFound() {
+        BDDMockito.when(userRepositoryMock.findByName(ArgumentMatchers.anyString()))
+                .thenReturn(Collections.emptyList());
+
+        List<User> userResponseList = userService.findByName("NameTest");
+        Assertions.assertThat(userResponseList).isNotNull().isEmpty();
     }
 
     @Test
