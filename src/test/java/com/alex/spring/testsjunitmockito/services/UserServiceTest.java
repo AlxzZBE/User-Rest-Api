@@ -13,10 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
-import org.mockito.BDDMockito;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Collections;
@@ -50,6 +47,8 @@ class UserServiceTest {
 
         BDDMockito.when(userRepositoryMock.save(ArgumentMatchers.any(User.class)))
                 .thenReturn(UserCreator.createValidUser());
+
+        BDDMockito.doNothing().when(userRepositoryMock).deleteById(ArgumentMatchers.anyInt());
     }
 
     @Test
@@ -203,5 +202,7 @@ class UserServiceTest {
 
     @Test
     void deleteById() {
+        Assertions.assertThatCode(() -> userService.deleteById(ID1)).doesNotThrowAnyException();
+        Mockito.verify(userRepositoryMock, Mockito.times(1)).deleteById(ID1);
     }
 }
