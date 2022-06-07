@@ -42,9 +42,6 @@ class UserServiceTest {
 
         BDDMockito.when(userRepositoryMock.findAll()).thenReturn(List.of(UserCreator.createValidUser()));
 
-        BDDMockito.when(userRepositoryMock.findByEmail(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(UserCreator.createValidUser()));
-        
         BDDMockito.when(userRepositoryMock.save(ArgumentMatchers.any(User.class)))
                 .thenReturn(UserCreator.createValidUser());
     }
@@ -94,7 +91,11 @@ class UserServiceTest {
     }
 
     @Test
-    void findByEmailOrThrowNotFoundException() {
+    @DisplayName("findByEmailOrThrowNotFoundException Returns User When Successful")
+    void findByEmail_ReturnsUser_WhenSuccessful() {
+        BDDMockito.when(userRepositoryMock.findByEmail(ArgumentMatchers.anyString()))
+                .thenReturn(Optional.of(UserCreator.createValidUser()));
+
         User userResponse = userService.findByEmailOrThrowNotFoundException(EMAIL1);
 
         Assertions.assertThat(userResponse).isNotNull().isExactlyInstanceOf(User.class);
@@ -102,6 +103,17 @@ class UserServiceTest {
         Assertions.assertThat(userResponse.getName()).isNotNull().isEqualTo(EXPECTED_NAME);
         Assertions.assertThat(userResponse.getEmail()).isNotNull().isEqualTo(EXPECTED_EMAIL);
         Assertions.assertThat(userResponse.getPassword()).isNotNull().isEqualTo(EXPECTED_PASSWORD);
+    }
+
+    @Test
+    @DisplayName("findByEmailOrThrowNotFoundException throws NotFoundException When User Is Not Found")
+    void findByEmail_ThrowsNotFoundException_WhenUserIsNotFound() {
+        BDDMockito.when(userRepositoryMock.findByEmail(ArgumentMatchers.anyString()))
+                .thenThrow(new NotFoundException("User with email `%s` not found".formatted(EMAIL1)));
+
+        Assertions.assertThatExceptionOfType(NotFoundException.class)
+                .isThrownBy(() -> userService.findByEmailOrThrowNotFoundException(EMAIL1))
+                .withMessageContainingAll("User with email `%s` not found".formatted(EMAIL1));
     }
 
     @Test
