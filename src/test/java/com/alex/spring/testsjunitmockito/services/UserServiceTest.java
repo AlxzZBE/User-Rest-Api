@@ -6,6 +6,7 @@ import com.alex.spring.testsjunitmockito.exceptions.NotFoundException;
 import com.alex.spring.testsjunitmockito.repositories.UserRepository;
 import com.alex.spring.testsjunitmockito.util.UserCreator;
 import com.alex.spring.testsjunitmockito.util.UserPostRequestBodyCreator;
+import com.alex.spring.testsjunitmockito.util.UserPutRequestBodyCreator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -168,6 +169,21 @@ class UserServiceTest {
 
     @Test
     void update() {
+        Integer expectedIdUpdated = UserCreator.createValidUpdatedUser().getId();
+        String expectedNameUpdated = UserCreator.createValidUpdatedUser().getName();
+        String expectedEmailUpdated = UserCreator.createValidUpdatedUser().getEmail();
+        String expectedPasswordUpdated = UserCreator.createValidUpdatedUser().getPassword();
+
+        BDDMockito.when(userRepositoryMock.save(ArgumentMatchers.any(User.class)))
+                .thenReturn(UserCreator.createValidUpdatedUser());
+
+        User userResponse = userService.update(UserPutRequestBodyCreator.createUserPutRequestBody());
+
+        Assertions.assertThat(userResponse).isNotNull().isExactlyInstanceOf(User.class);
+        Assertions.assertThat(userResponse.getId()).isNotNull().isEqualTo(expectedIdUpdated);
+        Assertions.assertThat(userResponse.getName()).isNotNull().isEqualTo(expectedNameUpdated);
+        Assertions.assertThat(userResponse.getEmail()).isNotNull().isEqualTo(expectedEmailUpdated);
+        Assertions.assertThat(userResponse.getPassword()).isNotNull().isEqualTo(expectedPasswordUpdated);
     }
 
     @Test
