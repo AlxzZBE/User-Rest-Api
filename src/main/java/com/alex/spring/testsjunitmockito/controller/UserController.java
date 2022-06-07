@@ -39,11 +39,18 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll().stream().map(UserGet::new).toList());
     }
 
-    @GetMapping(path = "/find")
+    @GetMapping(params = "email")
     public ResponseEntity<UserGet> findByEmail(@RequestParam String email) {
         log.info("Finding User by Email `{}`", email);
         return ResponseEntity.ok(new UserGet(userService.findByEmailOrThrowNotFoundException(email)));
     }
+
+    @GetMapping(params = {"name"})
+    public ResponseEntity<List<UserGet>> findByName(@RequestParam String name) {
+        log.info("Finding Users by Name `{}`", name);
+        return ResponseEntity.ok(userService.findByName(name).stream().map(UserGet::new).toList());
+    }
+
 
     @PostMapping
     public ResponseEntity<Void> save(@RequestBody @Valid UserPostRequestBody userPostRequestBody) {
@@ -58,5 +65,11 @@ public class UserController {
         log.info("Updating User with id `{}`", userPutRequestBody.getId());
         userService.update(userPutRequestBody);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
+        userService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

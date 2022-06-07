@@ -31,6 +31,10 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User with email `%s` not found".formatted(email)));
     }
 
+    public List<User> findByName(String name) {
+        return userRepository.findByName(name);
+    }
+
     public User save(UserPostRequestBody userPostRequestBody) {
         checkingEmailAlreadyExists(userPostRequestBody.getEmail());
         return userRepository.save(User.builder()
@@ -49,6 +53,11 @@ public class UserService {
                 .email(userPutRequestBody.getEmail())
                 .password(userPutRequestBody.getPassword())
                 .build());
+    }
+
+    public void deleteById(Integer id) {
+        findByIdOrThrowNotFoundException(id);
+        userRepository.deleteById(id);
     }
 
     private void checkingEmailAlreadyExists(String email) {
