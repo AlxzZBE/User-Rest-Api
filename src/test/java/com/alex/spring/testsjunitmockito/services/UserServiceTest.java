@@ -1,6 +1,7 @@
 package com.alex.spring.testsjunitmockito.services;
 
 import com.alex.spring.testsjunitmockito.domain.User;
+import com.alex.spring.testsjunitmockito.exceptions.EmailAlreadyExistsException;
 import com.alex.spring.testsjunitmockito.exceptions.NotFoundException;
 import com.alex.spring.testsjunitmockito.repositories.UserRepository;
 import com.alex.spring.testsjunitmockito.util.UserCreator;
@@ -121,7 +122,8 @@ class UserServiceTest {
     }
 
     @Test
-    void save() {
+    @DisplayName("save Returns User When Successful")
+    void save_ReturnsUser_WhenSuccessful() {
         User userResponse = userService.save(UserPostRequestBodyCreator.createUserPostRequestBody());
 
         Assertions.assertThat(userResponse).isNotNull().isExactlyInstanceOf(User.class);
@@ -129,6 +131,17 @@ class UserServiceTest {
         Assertions.assertThat(userResponse.getName()).isNotNull().isEqualTo(EXPECTED_NAME);
         Assertions.assertThat(userResponse.getEmail()).isNotNull().isEqualTo(EXPECTED_EMAIL);
         Assertions.assertThat(userResponse.getPassword()).isNotNull().isEqualTo(EXPECTED_PASSWORD);
+    }
+
+    @Test
+    @DisplayName("save Throws EmailAlreadyExistsException When User with email Already Exists")
+    void save_ThrowsEmailAlreadyExistsException_WhenUserWithEmailAlreadyExists() {
+        BDDMockito.when(userRepositoryMock.findByEmail(ArgumentMatchers.anyString()))
+                .thenReturn(Optional.of(UserCreator.createValidUser()));
+
+        Assertions.assertThatExceptionOfType(EmailAlreadyExistsException.class)
+                .isThrownBy(() -> userService.save(UserPostRequestBodyCreator.createUserPostRequestBody()))
+                .withMessageContainingAll("User with email `%s` Already Exists!".formatted(EXPECTED_EMAIL));
     }
 
     @Test
