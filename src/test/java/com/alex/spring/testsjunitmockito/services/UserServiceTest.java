@@ -43,6 +43,9 @@ class UserServiceTest {
 
         BDDMockito.when(userRepositoryMock.findAll()).thenReturn(List.of(UserCreator.createValidUser()));
 
+        BDDMockito.when(userRepositoryMock.findByName(ArgumentMatchers.anyString()))
+                .thenReturn(List.of(UserCreator.createValidUser()));
+
         BDDMockito.when(userRepositoryMock.save(ArgumentMatchers.any(User.class)))
                 .thenReturn(UserCreator.createValidUser());
     }
@@ -118,7 +121,16 @@ class UserServiceTest {
     }
 
     @Test
-    void findByName() {
+    @DisplayName("findByName Returns a List of User When Successful")
+    void findByName_ReturnsAListOfUser_WhenSuccessful() {
+        List<User> userResponseList = userService.findByName("tests");
+
+        Assertions.assertThat(userResponseList).isNotEmpty().isNotNull().hasSize(1);
+        Assertions.assertThat(userResponseList.get(0)).isNotNull().isExactlyInstanceOf(User.class);
+        Assertions.assertThat(userResponseList.get(0).getId()).isNotNull().isEqualTo(EXPECTED_ID);
+        Assertions.assertThat(userResponseList.get(0).getName()).isNotNull().isEqualTo(EXPECTED_NAME);
+        Assertions.assertThat(userResponseList.get(0).getEmail()).isNotNull().isEqualTo(EXPECTED_EMAIL);
+        Assertions.assertThat(userResponseList.get(0).getPassword()).isNotNull().isEqualTo(EXPECTED_PASSWORD);
     }
 
     @Test
