@@ -6,7 +6,7 @@ public class UserPutRequestBodyCreator {
 
     public static UserPutRequestBody createUserPutRequestBody() {
         return UserPutRequestBody.builder()
-                .id(UserCreator.ID)
+                .id(UserCreator.createValidUpdatedUser().getId())
                 .name(UserCreator.createValidUpdatedUser().getName())
                 .email(UserCreator.createValidUpdatedUser().getEmail())
                 .password(UserCreator.createValidUpdatedUser().getPassword())

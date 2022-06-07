@@ -6,9 +6,9 @@ public class UserPostRequestBodyCreator {
 
     public static UserPostRequestBody createUserPostRequestBody() {
         return UserPostRequestBody.builder()
-                .name(UserCreator.NAME)
-                .email(UserCreator.EMAIL)
-                .password(UserCreator.PASSWORD)
+                .name(UserCreator.createUserToBeSaved().getName())
+                .email(UserCreator.createUserToBeSaved().getEmail())
+                .password(UserCreator.createUserToBeSaved().getPassword())
                 .build();
     }
 }
