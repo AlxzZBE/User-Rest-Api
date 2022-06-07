@@ -29,6 +29,9 @@ class UserServiceTest {
     public static final String EXPECTED_EMAIL = UserCreator.createValidUser().getEmail();
     public static final String EXPECTED_NAME = UserCreator.createValidUser().getName();
     public static final Integer EXPECTED_ID = UserCreator.createValidUser().getId();
+    public static final String USER_WITH_ID_NOT_FOUND = "User with id `%d` not found";
+    public static final String USER_WITH_EMAIL_NOT_FOUND = "User with email `%s` not found";
+    public static final String USER_WITH_EMAIL_ALREADY_EXISTS = "User with email `%s` Already Exists!";
     @InjectMocks
     private UserService userService;
 
@@ -67,11 +70,11 @@ class UserServiceTest {
     @DisplayName("findByIdOrThrowNotFoundException throws NotFoundException When User Is Not Found")
     void findById_ThrowsNotFoundException_WhenUserIsNotFound() {
         BDDMockito.when(userRepositoryMock.findById(ArgumentMatchers.anyInt()))
-                .thenThrow(new NotFoundException("User with id `%d` not found".formatted(ID1)));
+                .thenThrow(new NotFoundException(USER_WITH_ID_NOT_FOUND.formatted(ID1)));
 
         Assertions.assertThatExceptionOfType(NotFoundException.class)
                 .isThrownBy(() -> userService.findByIdOrThrowNotFoundException(ID1))
-                .withMessageContainingAll("User with id `%d` not found".formatted(ID1));
+                .withMessageContainingAll(USER_WITH_ID_NOT_FOUND.formatted(ID1));
     }
 
     @Test
@@ -114,11 +117,11 @@ class UserServiceTest {
     @DisplayName("findByEmailOrThrowNotFoundException throws NotFoundException When User Is Not Found")
     void findByEmail_ThrowsNotFoundException_WhenUserIsNotFound() {
         BDDMockito.when(userRepositoryMock.findByEmail(ArgumentMatchers.anyString()))
-                .thenThrow(new NotFoundException("User with email `%s` not found".formatted(EMAIL1)));
+                .thenThrow(new NotFoundException(USER_WITH_EMAIL_NOT_FOUND.formatted(EMAIL1)));
 
         Assertions.assertThatExceptionOfType(NotFoundException.class)
                 .isThrownBy(() -> userService.findByEmailOrThrowNotFoundException(EMAIL1))
-                .withMessageContainingAll("User with email `%s` not found".formatted(EMAIL1));
+                .withMessageContainingAll(USER_WITH_EMAIL_NOT_FOUND.formatted(EMAIL1));
     }
 
     @Test
@@ -164,7 +167,7 @@ class UserServiceTest {
 
         Assertions.assertThatExceptionOfType(EmailAlreadyExistsException.class)
                 .isThrownBy(() -> userService.save(UserPostRequestBodyCreator.createUserPostRequestBody()))
-                .withMessageContainingAll("User with email `%s` Already Exists!".formatted(EXPECTED_EMAIL));
+                .withMessageContainingAll(USER_WITH_EMAIL_ALREADY_EXISTS.formatted(EXPECTED_EMAIL));
     }
 
     @Test
@@ -197,12 +200,28 @@ class UserServiceTest {
 
         Assertions.assertThatExceptionOfType(EmailAlreadyExistsException.class)
                 .isThrownBy(() -> userService.update(userPutRequestBody))
-                .withMessageContainingAll("User with email `%s` Already Exists!".formatted(userPutRequestBody.getEmail()));
+                .withMessageContainingAll(USER_WITH_EMAIL_ALREADY_EXISTS.formatted(userPutRequestBody.getEmail()));
+
+//        Mockito.verify(userRepositoryMock, Mockito.times(0)).save(UserCreator.createValidUser());
     }
 
     @Test
-    void deleteById() {
+    @DisplayName("deleteById Remove User When Successful")
+    void deleteById_RemoveUser_WhenSuccessful() {
         Assertions.assertThatCode(() -> userService.deleteById(ID1)).doesNotThrowAnyException();
         Mockito.verify(userRepositoryMock, Mockito.times(1)).deleteById(ID1);
+    }
+
+    @Test
+    @DisplayName("deleteById Throws NotFoundException When User Is Not Found")
+    void deleteById_ThrowsNotFoundException_WhenUserIsNotFound() {
+        BDDMockito.when(userRepositoryMock.findById(ArgumentMatchers.anyInt()))
+                .thenThrow(new NotFoundException(USER_WITH_ID_NOT_FOUND.formatted(ID1)));
+
+        Assertions.assertThatExceptionOfType(NotFoundException.class)
+                .isThrownBy(() -> userService.deleteById(ID1))
+                .withMessageContainingAll(USER_WITH_ID_NOT_FOUND.formatted(ID1));
+
+        Mockito.verify(userRepositoryMock, Mockito.times(0)).deleteById(ID1);
     }
 }
