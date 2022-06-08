@@ -189,8 +189,8 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("update Returns Void When Successful")
-    void update_ReturnsVoid_WhenSuccessful() {
+    @DisplayName("update Replace a User When Successful")
+    void update_ReplaceAUser_WhenSuccessful() {
         ResponseEntity<Void> voidResponse = userController.update(UserPutRequestBodyCreator.createUserPutRequestBody());
 
         Assertions.assertThat(voidResponse.getStatusCode()).isNotNull().isEqualTo(HttpStatus.NO_CONTENT);
@@ -234,8 +234,8 @@ class UserControllerTest {
     @Test
     @DisplayName("deleteById Throws NotFoundException When User Is Not Found")
     void deleteById_ThrowsNotFoundException_WhenUserIsNotFound() {
-        BDDMockito.when(userController.deleteById(ArgumentMatchers.anyInt()))
-                .thenThrow(new NotFoundException(USER_WITH_ID_NOT_FOUND.formatted(ID1)));
+        BDDMockito.doThrow(new NotFoundException(USER_WITH_ID_NOT_FOUND.formatted(ID1)))
+                .when(userServiceMock).deleteById(ArgumentMatchers.anyInt());
 
         Assertions.assertThatExceptionOfType(NotFoundException.class)
                 .isThrownBy(() -> userController.deleteById(ID1))

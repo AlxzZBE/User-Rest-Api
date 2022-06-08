@@ -171,7 +171,8 @@ class UserServiceTest {
     }
 
     @Test
-    void update() {
+    @DisplayName("update Replace a User When Successful")
+    void update_ReplaceAUser_WhenSuccessful() {
         Integer expectedIdUpdated = UserCreator.createValidUpdatedUser().getId();
         String expectedNameUpdated = UserCreator.createValidUpdatedUser().getName();
         String expectedEmailUpdated = UserCreator.createValidUpdatedUser().getEmail();
@@ -202,7 +203,20 @@ class UserServiceTest {
                 .isThrownBy(() -> userService.update(userPutRequestBody))
                 .withMessageContainingAll(USER_WITH_EMAIL_ALREADY_EXISTS.formatted(userPutRequestBody.getEmail()));
 
-//        Mockito.verify(userRepositoryMock, Mockito.times(0)).save(UserCreator.createValidUser());
+        Mockito.verify(userRepositoryMock, Mockito.times(0)).save(UserCreator.createValidUpdatedUser());
+    }
+
+    @Test
+    @DisplayName("update Throws NotFoundException When User Is Not Found")
+    void update_ThrowsNotFoundException_WhenUserIsNotFound() {
+        BDDMockito.when(userRepositoryMock.findById(ArgumentMatchers.anyInt()))
+                .thenThrow(new NotFoundException(USER_WITH_ID_NOT_FOUND.formatted(ID1)));
+
+        Assertions.assertThatExceptionOfType(NotFoundException.class)
+                .isThrownBy(() -> userService.update(UserPutRequestBodyCreator.createUserPutRequestBody()))
+                .withMessageContainingAll(USER_WITH_ID_NOT_FOUND.formatted(ID1));
+
+        Mockito.verify(userRepositoryMock, Mockito.times(0)).save(UserCreator.createValidUpdatedUser());
     }
 
     @Test
