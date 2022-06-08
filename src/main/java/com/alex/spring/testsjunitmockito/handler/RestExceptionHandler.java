@@ -34,5 +34,4 @@ public class RestExceptionHandler {
                         .details(eae.getMessage())
                         .build(), HttpStatus.CONFLICT);
     }
-
 }
