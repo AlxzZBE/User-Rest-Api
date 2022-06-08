@@ -2,9 +2,11 @@ package com.alex.spring.testsjunitmockito.controller;
 
 import com.alex.spring.testsjunitmockito.exceptions.NotFoundException;
 import com.alex.spring.testsjunitmockito.requests.UserGet;
+import com.alex.spring.testsjunitmockito.requests.UserPostRequestBody;
 import com.alex.spring.testsjunitmockito.services.UserService;
 import com.alex.spring.testsjunitmockito.util.UserCreator;
 import com.alex.spring.testsjunitmockito.util.UserGetCreator;
+import com.alex.spring.testsjunitmockito.util.UserPostRequestBodyCreator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,6 +52,9 @@ class UserControllerTest {
 
         BDDMockito.when(userServiceMock.findByName(ArgumentMatchers.anyString()))
                 .thenReturn(List.of(UserCreator.createValidUser()));
+
+        BDDMockito.when(userServiceMock.save(ArgumentMatchers.any(UserPostRequestBody.class)))
+                .thenReturn(UserCreator.createValidUser());
     }
 
     @Test
@@ -125,8 +130,34 @@ class UserControllerTest {
     }
 
     @Test
-    void save() {
+    @DisplayName("findByName Returns a List Of UserGet When Successful")
+    void findByName_ReturnsAListOfUsersGet_WhenSuccessful() {
+        ResponseEntity<List<UserGet>> userGetResponseList = userController.findByName("NameTest");
 
+        Assertions.assertThat(userGetResponseList.getStatusCode()).isNotNull().isEqualTo(HttpStatus.OK);
+        Assertions.assertThat(userGetResponseList.getBody()).isNotNull().hasSize(1);
+        Assertions.assertThat(userGetResponseList.getBody().get(0)).isNotNull().isExactlyInstanceOf(UserGet.class);
+        Assertions.assertThat(userGetResponseList.getBody().get(0).getId()).isNotNull().isEqualTo(EXPECTED_ID);
+        Assertions.assertThat(userGetResponseList.getBody().get(0).getName()).isNotNull().isEqualTo(EXPECTED_NAME);
+        Assertions.assertThat(userGetResponseList.getBody().get(0).getEmail()).isNotNull().isEqualTo(EXPECTED_EMAIL);
+    }
+
+    @Test
+    @DisplayName("findByName Returns Empty List When User Is Not Found")
+    void findByName_ReturnsEmptyList_WhenUserIsNotFound() {
+        BDDMockito.when(userServiceMock.findByName(ArgumentMatchers.anyString())).thenReturn(Collections.emptyList());
+
+        ResponseEntity<List<UserGet>> userGetResponseList = userController.findByName("NameTest");
+
+        Assertions.assertThat(userGetResponseList.getStatusCode()).isNotNull().isEqualTo(HttpStatus.OK);
+        Assertions.assertThat(userGetResponseList.getBody()).isNotNull().isEmpty();
+    }
+
+    @Test
+    void save() {
+        ResponseEntity<Void> voidResponse = userController.save(UserPostRequestBodyCreator.createUserPostRequestBody());
+
+        Assertions.assertThat(voidResponse.getStatusCode()).isNotNull().isEqualTo(HttpStatus.CREATED);
     }
 
     @Test
