@@ -220,7 +220,8 @@ class UserControllerTest {
     }
 
     @Test
-    void deleteById() {
+    @DisplayName("deleteById Remove User When Successful")
+    void deleteById_RemoveUser_WhenSuccessful() {
         ResponseEntity<Void> voidResponse = userController.deleteById(ID1);
 
         Assertions.assertThat(voidResponse.hasBody()).isFalse();
@@ -233,13 +234,13 @@ class UserControllerTest {
     @Test
     @DisplayName("deleteById Throws NotFoundException When User Is Not Found")
     void deleteById_ThrowsNotFoundException_WhenUserIsNotFound() {
-        BDDMockito.when(userRepositoryMock.findById(ArgumentMatchers.anyInt()))
+        BDDMockito.when(userController.deleteById(ArgumentMatchers.anyInt()))
                 .thenThrow(new NotFoundException(USER_WITH_ID_NOT_FOUND.formatted(ID1)));
 
         Assertions.assertThatExceptionOfType(NotFoundException.class)
-                .isThrownBy(() -> userService.deleteById(ID1))
+                .isThrownBy(() -> userController.deleteById(ID1))
                 .withMessageContainingAll(USER_WITH_ID_NOT_FOUND.formatted(ID1));
 
-        Mockito.verify(userRepositoryMock, Mockito.times(0)).deleteById(ID1);
+        Mockito.verify(userServiceMock, Mockito.times(1)).deleteById(ID1);
     }
 }
