@@ -18,7 +18,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +45,10 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        ServletRequestAttributes attributes = new ServletRequestAttributes(mockRequest);
+        RequestContextHolder.setRequestAttributes(attributes);
+
         BDDMockito.when(userServiceMock.findByIdOrThrowNotFoundException(ArgumentMatchers.anyInt()))
                 .thenReturn(UserCreator.createValidUser());
 
@@ -158,6 +165,9 @@ class UserControllerTest {
         ResponseEntity<Void> voidResponse = userController.save(UserPostRequestBodyCreator.createUserPostRequestBody());
 
         Assertions.assertThat(voidResponse.getStatusCode()).isNotNull().isEqualTo(HttpStatus.CREATED);
+        Assertions.assertThat(voidResponse.getBody()).isNull();
+        Assertions.assertThat(voidResponse.getHeaders().getLocation().getPath()).isNotNull()
+                .isEqualTo("/" + EXPECTED_ID);
     }
 
     @Test
