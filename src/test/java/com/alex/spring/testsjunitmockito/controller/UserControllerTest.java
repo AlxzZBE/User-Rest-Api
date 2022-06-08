@@ -4,19 +4,18 @@ import com.alex.spring.testsjunitmockito.exceptions.EmailAlreadyExistsException;
 import com.alex.spring.testsjunitmockito.exceptions.NotFoundException;
 import com.alex.spring.testsjunitmockito.requests.UserGet;
 import com.alex.spring.testsjunitmockito.requests.UserPostRequestBody;
+import com.alex.spring.testsjunitmockito.requests.UserPutRequestBody;
 import com.alex.spring.testsjunitmockito.services.UserService;
 import com.alex.spring.testsjunitmockito.util.UserCreator;
 import com.alex.spring.testsjunitmockito.util.UserGetCreator;
 import com.alex.spring.testsjunitmockito.util.UserPostRequestBodyCreator;
+import com.alex.spring.testsjunitmockito.util.UserPutRequestBodyCreator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
-import org.mockito.BDDMockito;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -64,6 +63,11 @@ class UserControllerTest {
 
         BDDMockito.when(userServiceMock.save(ArgumentMatchers.any(UserPostRequestBody.class)))
                 .thenReturn(UserCreator.createValidUser());
+
+        BDDMockito.when(userServiceMock.update(ArgumentMatchers.any(UserPutRequestBody.class)))
+                .thenReturn(UserCreator.createValidUser());
+
+        BDDMockito.doNothing().when(userServiceMock).deleteById(ArgumentMatchers.anyInt());
     }
 
     @Test
@@ -185,10 +189,57 @@ class UserControllerTest {
     }
 
     @Test
-    void update() {
+    @DisplayName("update Returns Void When Successful")
+    void update_ReturnsVoid_WhenSuccessful() {
+        ResponseEntity<Void> voidResponse = userController.update(UserPutRequestBodyCreator.createUserPutRequestBody());
+
+        Assertions.assertThat(voidResponse.getStatusCode()).isNotNull().isEqualTo(HttpStatus.NO_CONTENT);
+        Assertions.assertThat(voidResponse.getBody()).isNull();
+    }
+
+    @Test
+    @DisplayName("update Throws EmailAlreadyExistsException When User With Email Already Exists")
+    void update_ThrowsEmailAlreadyExistsException_WhenUserWithEmailAlreadyExists() {
+        BDDMockito.when(userServiceMock.update(ArgumentMatchers.any(UserPutRequestBody.class)))
+                .thenThrow(new EmailAlreadyExistsException(USER_WITH_EMAIL_ALREADY_EXISTS.formatted(EMAIL1)));
+
+        Assertions.assertThatExceptionOfType(EmailAlreadyExistsException.class)
+                .isThrownBy(() -> userController.update(UserPutRequestBodyCreator.createUserPutRequestBody()))
+                .withMessageContainingAll(USER_WITH_EMAIL_ALREADY_EXISTS.formatted(EMAIL1));
+    }
+
+    @Test
+    @DisplayName("update Throws NotFoundException When User Is Not Found")
+    void update_ThrowsNotFoundException_WhenUserIsNotFound() {
+        BDDMockito.when(userServiceMock.update(ArgumentMatchers.any(UserPutRequestBody.class)))
+                .thenThrow(new NotFoundException(USER_WITH_ID_NOT_FOUND.formatted(ID1)));
+
+        Assertions.assertThatExceptionOfType(NotFoundException.class)
+                .isThrownBy(() -> userController.update(UserPutRequestBodyCreator.createUserPutRequestBody()))
+                .withMessageContainingAll(USER_WITH_ID_NOT_FOUND.formatted(ID1));
     }
 
     @Test
     void deleteById() {
+        ResponseEntity<Void> voidResponse = userController.deleteById(ID1);
+
+        Assertions.assertThat(voidResponse.hasBody()).isFalse();
+        Assertions.assertThatCode(voidResponse::hasBody).doesNotThrowAnyException();
+        Assertions.assertThat(voidResponse.getStatusCode()).isNotNull().isEqualTo(HttpStatus.NO_CONTENT);
+
+        Mockito.verify(userServiceMock, Mockito.times(1)).deleteById(ID1);
+    }
+
+    @Test
+    @DisplayName("deleteById Throws NotFoundException When User Is Not Found")
+    void deleteById_ThrowsNotFoundException_WhenUserIsNotFound() {
+        BDDMockito.when(userRepositoryMock.findById(ArgumentMatchers.anyInt()))
+                .thenThrow(new NotFoundException(USER_WITH_ID_NOT_FOUND.formatted(ID1)));
+
+        Assertions.assertThatExceptionOfType(NotFoundException.class)
+                .isThrownBy(() -> userService.deleteById(ID1))
+                .withMessageContainingAll(USER_WITH_ID_NOT_FOUND.formatted(ID1));
+
+        Mockito.verify(userRepositoryMock, Mockito.times(0)).deleteById(ID1);
     }
 }
