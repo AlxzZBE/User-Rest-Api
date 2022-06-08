@@ -18,7 +18,7 @@ public class LocalConfig {
     public void startDb() {
         userRepository.save(User.builder()
                 .name("Alex")
-                .email("alexsander_lima99@hotmail.com")
+                .email("alex_@mail.com")
                 .password("12345")
                 .build());
         userRepository.save(User.builder()
@@ -28,5 +28,4 @@ public class LocalConfig {
                 .build());
 
     }
-
 }
