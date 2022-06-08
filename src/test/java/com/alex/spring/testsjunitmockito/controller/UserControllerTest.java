@@ -25,11 +25,12 @@ import java.util.List;
 class UserControllerTest {
 
     public static final int ID1 = 1;
+    public static final String EMAIL1 = "email1@gmail.com";
     public static final Integer EXPECTED_ID = UserGetCreator.createValidUserGet().getId();
     public static final String EXPECTED_NAME = UserGetCreator.createValidUserGet().getName();
     public static final String EXPECTED_EMAIL = UserGetCreator.createValidUserGet().getEmail();
-
     public static final String USER_WITH_ID_NOT_FOUND = "User with id `%d` not found";
+    public static final String USER_WITH_EMAIL_NOT_FOUND = "User with email `%s` not found";
 
     @InjectMocks
     private UserController userController;
@@ -43,6 +44,12 @@ class UserControllerTest {
                 .thenReturn(UserCreator.createValidUser());
 
         BDDMockito.when(userServiceMock.findAll()).thenReturn(List.of(UserCreator.createValidUser()));
+
+        BDDMockito.when(userServiceMock.findByEmailOrThrowNotFoundException(ArgumentMatchers.anyString()))
+                .thenReturn(UserCreator.createValidUser());
+
+        BDDMockito.when(userServiceMock.findByName(ArgumentMatchers.anyString()))
+                .thenReturn(List.of(UserCreator.createValidUser()));
     }
 
     @Test
@@ -94,15 +101,32 @@ class UserControllerTest {
     }
 
     @Test
-    void findByEmail() {
+    @DisplayName("findByEmail Returns UserGet When Successful")
+    void findByEmail_ReturnsUserGet_WhenSuccessful() {
+        ResponseEntity<UserGet> userGetResponse = userController.findByEmail(EMAIL1);
+
+        Assertions.assertThat(userGetResponse.getStatusCode()).isNotNull().isEqualTo(HttpStatus.OK);
+        Assertions.assertThat(userGetResponse.getBody()).isNotNull().isExactlyInstanceOf(UserGet.class);
+
+        Assertions.assertThat(userGetResponse.getBody().getId()).isNotNull().isEqualTo(EXPECTED_ID);
+        Assertions.assertThat(userGetResponse.getBody().getName()).isNotNull().isEqualTo(EXPECTED_NAME);
+        Assertions.assertThat(userGetResponse.getBody().getEmail()).isNotNull().isEqualTo(EXPECTED_EMAIL);
     }
 
     @Test
-    void findByName() {
+    @DisplayName("findByEmail Throws NotFoundException When User Is Not Found")
+    void findByEmail_ThrowsNotFoundException_WhenUserIsNotFound() {
+        BDDMockito.when(userServiceMock.findByEmailOrThrowNotFoundException(ArgumentMatchers.anyString()))
+                .thenThrow(new NotFoundException(USER_WITH_EMAIL_NOT_FOUND.formatted(EMAIL1)));
+
+        Assertions.assertThatExceptionOfType(NotFoundException.class)
+                .isThrownBy(() -> userController.findByEmail(EMAIL1))
+                .withMessageContainingAll(USER_WITH_EMAIL_NOT_FOUND.formatted(EMAIL1));
     }
 
     @Test
     void save() {
+
     }
 
     @Test
