@@ -1,5 +1,6 @@
 package com.alex.spring.testsjunitmockito.controller;
 
+import com.alex.spring.testsjunitmockito.exceptions.EmailAlreadyExistsException;
 import com.alex.spring.testsjunitmockito.exceptions.NotFoundException;
 import com.alex.spring.testsjunitmockito.requests.UserGet;
 import com.alex.spring.testsjunitmockito.requests.UserPostRequestBody;
@@ -36,6 +37,7 @@ class UserControllerTest {
     public static final String EXPECTED_EMAIL = UserGetCreator.createValidUserGet().getEmail();
     public static final String USER_WITH_ID_NOT_FOUND = "User with id `%d` not found";
     public static final String USER_WITH_EMAIL_NOT_FOUND = "User with email `%s` not found";
+    public static final String USER_WITH_EMAIL_ALREADY_EXISTS = "User with email `%s` Already Exists!";
 
     @InjectMocks
     private UserController userController;
@@ -161,13 +163,25 @@ class UserControllerTest {
     }
 
     @Test
-    void save() {
+    @DisplayName("save Returns Void When Successful")
+    void save_ReturnsVoid_WhenSuccessful() {
         ResponseEntity<Void> voidResponse = userController.save(UserPostRequestBodyCreator.createUserPostRequestBody());
 
         Assertions.assertThat(voidResponse.getStatusCode()).isNotNull().isEqualTo(HttpStatus.CREATED);
         Assertions.assertThat(voidResponse.getBody()).isNull();
         Assertions.assertThat(voidResponse.getHeaders().getLocation().getPath()).isNotNull()
                 .isEqualTo("/" + EXPECTED_ID);
+    }
+
+    @Test
+    @DisplayName("save Throws EmailAlreadyExistsException When User With Email Already Exists")
+    void save_ThrowsEmailAlreadyExistsException_WhenUserWithEmailAlreadyExists() {
+        BDDMockito.when(userServiceMock.save(ArgumentMatchers.any(UserPostRequestBody.class)))
+                .thenThrow(new EmailAlreadyExistsException(USER_WITH_EMAIL_ALREADY_EXISTS.formatted(EMAIL1)));
+
+        Assertions.assertThatExceptionOfType(EmailAlreadyExistsException.class)
+                .isThrownBy(() -> userController.save(UserPostRequestBodyCreator.createUserPostRequestBody()))
+                .withMessageContainingAll(USER_WITH_EMAIL_ALREADY_EXISTS.formatted(EMAIL1));
     }
 
     @Test
